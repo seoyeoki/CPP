@@ -23,3 +23,6 @@ harlFilter
 
 # ex04 output files
 *.replace
+
+# 42 subject PDFs
+*.pdf
