@@ -1,0 +1,25 @@
+# macOS
+.DS_Store
+
+# Claude Code
+.claude/
+
+# Build artifacts
+*.o
+*.d
+a.out
+*.dSYM/
+
+# Executables (names set in each exercise's Makefile)
+megaphone
+phonebook
+zombie
+zombieHorde
+brain
+violence
+replace
+harl
+harlFilter
+
+# ex04 output files
+*.replace
