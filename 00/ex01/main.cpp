@@ -1,5 +1,4 @@
 #include <iostream>
-#include <cstdlib>
 #include "PhoneBook.hpp"
 #include "Contact.hpp"
 
@@ -48,7 +47,9 @@ int main(void)
 			std::string indexStr;
 			std::getline(std::cin, indexStr);
 
-			int index = std::atoi(indexStr.c_str());
+			int index = -1;
+			if (indexStr.length() == 1 && indexStr[0] >= '0' && indexStr[0] <= '7')
+				index = indexStr[0] - '0';
 			std::cout << phoneBook.getDetailedIndexedContact(index);
 		}
 		else if (command == "EXIT")
