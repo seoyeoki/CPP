@@ -15,6 +15,11 @@ std::string PhoneBook::getSummarizedAllContact(void) const
 {
     std::ostringstream oss;
 
+    oss << std::right << std::setw(10) << "index" << '|'
+        << std::setw(10) << "first name" << '|'
+        << std::setw(10) << "last name" << '|'
+        << std::setw(10) << "nickname" << "\n";
+
     for (int i = 0; i < 8; i++)
     {
         oss << std::setw(10) << i << '|' << _contacts[i].getSummarizedContact();
