@@ -2,16 +2,15 @@
 #include "PhoneBook.hpp"
 #include "Contact.hpp"
 
-static std::string promptField(const std::string &label)
+static bool promptField(const std::string &label, std::string &value)
 {
-	std::string value;
-
 	while (true)
 	{
 		std::cout << label << ": ";
-		std::getline(std::cin, value);
-		if (!value.empty())
-			return value;
+		if (!std::getline(std::cin, value))
+			return false;   // input closed (EOF): give up instead of looping forever
+		if (value.find_first_not_of(" \t\n\v\f\r") != std::string::npos)
+			return true;
 		std::cout << "This field can't be empty. Try again." << std::endl;
 	}
 }
@@ -30,11 +29,18 @@ int main(void)
 		if (command == "ADD")
 		{
 			Contact contact;
-			std::string firstName     = promptField("First name");
-			std::string lastName      = promptField("Last name");
-			std::string nickname      = promptField("Nickname");
-			std::string phoneNumber   = promptField("Phone number");
-			std::string darkestSecret = promptField("Darkest secret");
+			std::string firstName;
+			std::string lastName;
+			std::string nickname;
+			std::string phoneNumber;
+			std::string darkestSecret;
+
+			if (!(promptField("First name", firstName)
+				&& promptField("Last name", lastName)
+				&& promptField("Nickname", nickname)
+				&& promptField("Phone number", phoneNumber)
+				&& promptField("Darkest secret", darkestSecret)))
+				break;   // EOF while adding: the half-filled contact is dropped, then exit
 
 			contact.setContact(firstName, lastName, nickname, phoneNumber, darkestSecret);
 			phoneBook.addContact(contact);
