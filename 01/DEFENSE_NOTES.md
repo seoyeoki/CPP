@@ -89,6 +89,12 @@ Zombie* bad(std::string name)
 - `-Wall -Wextra -Werror`, `-std=c++98` 컴파일 클린
 - `leaks` 도구로 메모리 누수 0건 확인 (5마리 생성 → 5마리 `delete[]`로 정상 해제)
 
+### `N`이 이상한 값일 때 (입력 점검에서 찾은 크래시)
+- `zombieHorde(-1, ...)`은 `new Zombie[-1]`이 `std::bad_alloc`을 던지고 아무도 안 잡아서 **비정상 종료(종료 코드 134)**. `N = 0`은 크기 0짜리 배열을 반환(의미 불분명). 스펙에 `N`의 범위가 없어서 평가자가 `main`을 바꿔 음수/0을 넣어볼 수 있음
+- 해결: **`N <= 0`이면 `NULL` 반환**, 할당은 `new (std::nothrow) Zombie[N]`(`<new>`, C++98 표준)로 해서 **실패해도 예외 대신 `NULL`을 반환**. 호출하는 쪽은 `NULL`을 확인하고, `delete[] NULL`은 안전
+- `main`에 `N = 0`, `N = -1` 시험을 추가해서 "좀비 없음"이 `NULL`로 나오는 걸 보여줌
+- 한계: `N`이 `INT_MAX`처럼 아주 크면 `nothrow`가 `NULL`을 돌려주기 전에 OS가 메모리 부족으로 프로세스를 죽일 수 있음(할당은 성공하고 생성자가 메모리를 건드릴 때 죽는 경우). 이 단계에선 `N <= 0` 방어까지만 함
+
 
 ## ex02 — HI THIS IS BRAIN
 
@@ -235,6 +241,11 @@ result += content.substr(pos);
 ### 확인 완료
 - `-Wall -Wextra -Werror`, `-std=c++98` 컴파일 클린, `leaks` 0건
 
+### 알고 있는 한계 (평가에서 물으면 솔직하게 답할 것)
+- **`/dev/zero` 같은 끝없는 입력**: 파일 크기를 알 수 없는 무한 스트림이라 읽기가 끝나지 않음 (`sed -i`도 마찬가지). 일반 파일에서만 동작을 보장
+- 출력 경로(`<filename>.replace`)가 **입력 파일을 가리키는 심볼릭 링크**면 입력 파일이 결과로 덮어써짐 (링크를 따라가는 일반적인 파일 열기 동작)
+- 확인한 것: `/dev/null`(출력을 못 만들어 에러), 파일명 300자, 출력 경로가 디렉터리, `s1`/`s2`가 1MB, 옵션처럼 생긴 `s1`(`--help`, `-n`) 모두 정상/에러 처리
+
 ## ex05 — Harl 2.0
 
 ### 요구사항의 핵심
@@ -275,6 +286,11 @@ for (int i = 0; i < 4; i++)
 
 ### 확인 완료
 - `-Wall -Wextra -Werror`, `-std=c++98` 컴파일 클린, `leaks` 0건
+
+### 알고 있는 한계 (평가에서 물으면 솔직하게 답할 것)
+- **`/dev/zero` 같은 끝없는 입력**: 파일 크기를 알 수 없는 무한 스트림이라 읽기가 끝나지 않음 (`sed -i`도 마찬가지). 일반 파일에서만 동작을 보장
+- 출력 경로(`<filename>.replace`)가 **입력 파일을 가리키는 심볼릭 링크**면 입력 파일이 결과로 덮어써짐 (링크를 따라가는 일반적인 파일 열기 동작)
+- 확인한 것: `/dev/null`(출력을 못 만들어 에러), 파일명 300자, 출력 경로가 디렉터리, `s1`/`s2`가 1MB, 옵션처럼 생긴 `s1`(`--help`, `-n`) 모두 정상/에러 처리
 - 4개 레벨 출력 확인, 모르는 레벨(`PANIC`, 빈 문자열, 소문자 `debug`)은 아무것도 출력 안 함
 
 ## ex06 — Harl filter (선택: "이 exercise 없이도 모듈 통과")
@@ -317,6 +333,9 @@ switch (index)
 - `break`가 없으면 아래 `case`로 계속 흘러내림. 보통은 버그지만 여기서는 **"이 레벨 이상 전부"**와 정확히 일치: `WARNING`(2)으로 들어가면 `warning()` → `error()` 순으로 실행
 - 디펜스 답변: "이 레벨 이상을 전부 출력하려고 `break`를 일부러 뺐다"
 - **GCC 주의 (직접 확인함):** GCC는 `-Wextra`에 `-Wimplicit-fallthrough`가 포함돼서, `break` 없는 `case` 사이에 `// fall through` 주석이 없으면 `error: this statement may fall through [-Werror=implicit-fallthrough=]`로 **빌드 실패** (g++-15로 확인). 주석을 넣으면 통과. clang은 기본 `-Wextra`에서 이 경고를 안 켜서 주석 없이도 통과. C++98에는 `[[fallthrough]]`가 없어서 주석으로 표기. 이 맥의 `g++`는 clang 별칭이라 진짜 GCC는 `g++-15`(Homebrew)로 확인해야 함. 또 GCC 경고는 `-fsyntax-only`로는 안 나오고 실제 컴파일(`-c`)에서만 나옴. **현재 코드는 `case` 사이에 `// fall through`를 넣어둔 상태 (GCC 15, clang 모두 통과 확인). 설명용이 아니라 GCC를 통과시키는 기능성 주석이라 빼면 안 됨** (norm 검사가 없는 C++ 모듈이라 주석을 써도 문제없음)
+
+### 이상한 인자도 확인
+- `--help`, `-1`, 개행이 든 `"ERROR\nWARNING"`, 1MB짜리 문자열, 셸 문법처럼 보이는 `DEBUG; rm -rf /`, `$(whoami)` 모두 모르는 입력으로 처리됨. 인자는 `std::string`으로 **비교만** 하고 어디서도 실행/해석하지 않아서 안전
 
 ### 확인 완료
 - `DEBUG`→4개, `INFO`→3개, `WARNING`→2개, `ERROR`→1개 레벨 출력. 모르는 문자열/소문자 `warning`/빈 문자열 → `[ Probably complaining about insignificant problems ]`
