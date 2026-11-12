@@ -1,8 +1,7 @@
 #include "PhoneBook.hpp"
 
-PhoneBook::PhoneBook(void)
+PhoneBook::PhoneBook(void) : _updateIndex(0)
 {
-    _updateIndex = 0;
 }
 
 void PhoneBook::addContact(Contact const &contact)

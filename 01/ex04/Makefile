@@ -1,6 +1,6 @@
 NAME = replace
 CC = c++
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror -std=c++98
 
 SRCS = main.cpp Replacer.cpp
 INCS = Replacer.hpp
