@@ -8,7 +8,7 @@ static bool promptField(const std::string &label, std::string &value)
 	{
 		std::cout << label << ": ";
 		if (!std::getline(std::cin, value))
-			return false;   // input closed (EOF): give up instead of looping forever
+			return false;   // input closed (EOF)
 		if (value.find_first_not_of(" \t\n\v\f\r") != std::string::npos)
 			return true;
 		std::cout << "This field can't be empty. Try again." << std::endl;
@@ -23,8 +23,8 @@ int main(void)
 	while (true)
 	{
 		std::cout << "Enter a command (ADD, SEARCH, EXIT): ";
-		if (!std::getline(std::cin, command))
-			break;   // 입력 끊기면(EOF) 종료
+		if (!std::getline(std::cin, command)) // eof
+			break;
 
 		if (command == "ADD")
 		{
