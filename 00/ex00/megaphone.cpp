@@ -2,7 +2,7 @@
 #include <cctype>
 #include <string>
 
-std::string toUpper(const std::string &s)
+std::string toUpper(const std::string &s) // 문자열 배열 하나마다 호출됨
 {
 	std::string result;
 
@@ -25,6 +25,6 @@ int main(int argc, char *argv[])
 	if (argc == 1)
 		std::cout << "* LOUD AND UNBEARABLE FEEDBACK NOISE *" << std::endl;
 	else
-		std::cout << toUpperStr(argv + 1) << std::endl;   // argv[0](프로그램명) 건너뛰고 넘김
+		std::cout << toUpperStr(argv + 1) << std::endl;   // argv[0](프로그램명) 건너뛰고 전달
 	return 0;
 }
